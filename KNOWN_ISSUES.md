@@ -53,6 +53,42 @@ distinct description before choosing.
 
 ---
 
+## 3. Windows: process-subtree cleanup is best-effort (no subreaper-grade reaping)
+
+**Summary.** On Windows, UMB terminates each backend MCP server it launches
+when a connection closes, on idle eviction, on hot-swap, and on shutdown
+(the child process is killed via its owned process handle). It does **not**
+yet have the kernel-enforced, subreaper-grade orphan adoption that the Linux
+build has, so a *grandchild* a backend server spawns and then detaches can
+survive past the backend's own termination.
+
+**Platform background.** The Linux build marks UMB as a child subreaper
+(`prctl(PR_SET_CHILD_SUBREAPER)`) and spawns each backend in its own process
+group, so a single `kill(-pgid)` plus subreaper adoption reaps the *entire*
+subtree — including a `setsid()`+double-fork orphan — atomically. Windows
+has no `prctl`/`setpgid`/`setsid` and no POSIX process groups; the
+equivalent primitive is a **Job Object**
+(`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`), which is **not** used in this v1.
+The current Windows behaviour is therefore: kill the direct backend child on
+every teardown path (always, via tokio's `kill_on_drop` + explicit kill on
+shutdown), with no guaranteed reaping of a deliberately detached grandchild.
+
+**Scope of the gap.** The dominant case — a normal backend MCP server and
+its ordinary children — is cleaned up on Windows, because killing the
+backend process terminates a process that has not detached. The gap is the
+same atypical class as issue #1 above (a backend that *itself*
+double-forks/detaches a helper), which on Windows is additionally not
+covered by the Linux-only subreaper/process-group reap.
+
+**Future hardening (not a committed deliverable).** Assigning every backend
+to a Windows Job Object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` (so the OS
+terminates the whole job — backend plus all descendants — when UMB's handle
+to the job closes) is the natural Windows analogue of the Linux
+process-group + subreaper reap. It is noted here as a *possibility only* and
+is explicitly **not** a committed roadmap item.
+
+---
+
 ## Scope note
 
 UMB is a transport bridge. It does not police, sandbox, or repair the

@@ -335,6 +335,11 @@ async fn execute_glob_files(args: Value) -> Result<Value> {
     }
 }
 
+/// Unix `grep_files`: shell out to the system `grep -rn` (behaviour-identical
+/// to the original — no codegen change on Unix). Windows lacks `grep`, so the
+/// `#[cfg(windows)]` sibling below does an equivalent in-process recursive
+/// substring search producing the SAME `path:lineno:line` output shape.
+#[cfg(not(windows))]
 async fn execute_grep_files(args: Value) -> Result<Value> {
     let pattern = get_string_arg(&args, "pattern")?.to_string();
     let search_path = get_optional_string_arg(&args, "path")
@@ -377,6 +382,116 @@ async fn execute_grep_files(args: Value) -> Result<Value> {
     }
 }
 
+/// Windows `grep_files`: in-process recursive plain-substring search. Windows
+/// has no `grep`, and `findstr` differs in flags/output, so we implement the
+/// search directly. Output shape matches the Unix `grep -rn` path used here
+/// (`path:lineno:matched-line`), the same 200-line truncation, and the same
+/// `glob` filename filter (via the in-tree `glob` crate's `Pattern`). This is
+/// a literal-substring match (not a regex), mirroring the typical UMB usage of
+/// this tool; the Unix path remains real `grep` so its richer matching is
+/// unchanged.
+#[cfg(windows)]
+async fn execute_grep_files(args: Value) -> Result<Value> {
+    let pattern = get_string_arg(&args, "pattern")?.to_string();
+    let search_path = get_optional_string_arg(&args, "path")
+        .unwrap_or(".")
+        .to_string();
+    let file_glob = get_optional_string_arg(&args, "glob").map(|s| s.to_string());
+
+    // Compile the optional filename glob (matched against the file name only,
+    // mirroring `grep --include`).
+    let glob_pat = match file_glob.as_ref() {
+        Some(g) => Some(
+            glob::Pattern::new(g)
+                .map_err(|e| anyhow!("Invalid glob '{}': {}", g, e))?,
+        ),
+        None => None,
+    };
+
+    // Bounded, blocking recursive walk on a worker thread so the async runtime
+    // is never stalled; same 30s wall-clock budget as the Unix grep path. The
+    // closure takes its own clone of `pattern` so the original is still usable
+    // for the "no matches" message after the search returns.
+    let needle = pattern.clone();
+    let search = tokio::task::spawn_blocking(move || {
+        let mut matches: Vec<String> = Vec::new();
+        let mut stack: Vec<std::path::PathBuf> = vec![std::path::PathBuf::from(&search_path)];
+        while let Some(dir) = stack.pop() {
+            if matches.len() >= 201 {
+                break;
+            }
+            let read = match std::fs::read_dir(&dir) {
+                Ok(r) => r,
+                Err(_) => continue,
+            };
+            for entry in read.flatten() {
+                let path = entry.path();
+                let ft = match entry.file_type() {
+                    Ok(t) => t,
+                    Err(_) => continue,
+                };
+                if ft.is_dir() {
+                    stack.push(path);
+                    continue;
+                }
+                if !ft.is_file() {
+                    continue;
+                }
+                if let Some(ref gp) = glob_pat {
+                    let name = path
+                        .file_name()
+                        .map(|n| n.to_string_lossy().into_owned())
+                        .unwrap_or_default();
+                    if !gp.matches(&name) {
+                        continue;
+                    }
+                }
+                // Read as text; skip files that aren't valid UTF-8 (mirrors
+                // grep's default text-line behaviour closely enough for the
+                // tool's purpose).
+                let content = match std::fs::read_to_string(&path) {
+                    Ok(c) => c,
+                    Err(_) => continue,
+                };
+                for (idx, line) in content.lines().enumerate() {
+                    if line.contains(&needle) {
+                        matches.push(format!("{}:{}:{}", path.display(), idx + 1, line));
+                        if matches.len() >= 201 {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        matches
+    });
+
+    let matches = tokio::time::timeout(std::time::Duration::from_secs(30), search)
+        .await
+        .map_err(|_| anyhow!("grep timed out after 30 seconds"))?
+        .map_err(|e| anyhow!("Failed to run search: {}", e))?;
+
+    if matches.is_empty() {
+        Ok(mcp_text_content(format!(
+            "No matches found for pattern '{}'",
+            pattern
+        )))
+    } else {
+        let total = matches.len();
+        let lines: Vec<&str> = matches.iter().take(200).map(|s| s.as_str()).collect();
+        let truncated = if total > 200 {
+            format!(
+                "{}\n... (truncated, {} total matches)",
+                lines.join("\n"),
+                total
+            )
+        } else {
+            lines.join("\n")
+        };
+        Ok(mcp_text_content(truncated))
+    }
+}
+
 async fn execute_run_command(args: Value) -> Result<Value> {
     let command = get_string_arg(&args, "command")?;
     let cwd = get_optional_string_arg(&args, "cwd");
@@ -385,8 +500,21 @@ async fn execute_run_command(args: Value) -> Result<Value> {
         .and_then(|v| v.as_f64())
         .unwrap_or(30.0) as u64;
 
-    let mut cmd = TokioCommand::new("sh");
-    cmd.arg("-c").arg(command);
+    // Shell selection is platform-specific: POSIX `sh -c` on Unix, the
+    // Windows command interpreter (`cmd.exe /C`) on Windows. The command
+    // string is otherwise passed through unchanged on both platforms.
+    #[cfg(windows)]
+    let mut cmd = {
+        let mut c = TokioCommand::new("cmd");
+        c.arg("/C").arg(command);
+        c
+    };
+    #[cfg(not(windows))]
+    let mut cmd = {
+        let mut c = TokioCommand::new("sh");
+        c.arg("-c").arg(command);
+        c
+    };
 
     if let Some(dir) = cwd {
         cmd.current_dir(dir);
@@ -455,11 +583,17 @@ mod tests {
         assert!(!is_local_tool("list_tools"));
     }
 
+    /// Portable temp-file path (uses the OS temp dir; `/tmp` on Unix,
+    /// `%TEMP%` on Windows) so these tests run green on every platform.
+    fn tmp_path(name: &str) -> String {
+        std::env::temp_dir().join(name).to_string_lossy().into_owned()
+    }
+
     #[tokio::test]
     async fn test_read_nonexistent_file() {
         let result = execute_local_tool(
             "read_file",
-            json!({"path": "/tmp/nonexistent_umb_test_file_12345.txt"}),
+            json!({"path": tmp_path("nonexistent_umb_test_file_12345.txt")}),
         )
         .await
         .unwrap();
@@ -470,7 +604,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_write_and_read_file() {
-        let test_path = "/tmp/umb_local_tool_test.txt";
+        let test_path = tmp_path("umb_local_tool_test.txt");
+        let test_path = test_path.as_str();
         let content = "Hello from UMB local tools test";
 
         // Write
@@ -499,7 +634,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_edit_file() {
-        let test_path = "/tmp/umb_local_tool_edit_test.txt";
+        let test_path = tmp_path("umb_local_tool_edit_test.txt");
+        let test_path = test_path.as_str();
         let _ = tokio::fs::write(test_path, "hello world hello").await;
 
         // Replace first occurrence

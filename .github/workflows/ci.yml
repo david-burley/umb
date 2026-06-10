@@ -21,11 +21,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         # Default = keyword-only, zero ONNX deps. embed-onnx pulls the heavy
         # embedding stack (ort + ~88MB libonnxruntime download) to prove the
         # opt-in path still builds and tests.
         features: [default, embed-onnx]
+        exclude:
+          # Skip embed-onnx on Windows: the ONNX Runtime native download/link
+          # path is unvalidated on the windows runner and the default
+          # (keyword-only) build is what the Windows release asset ships. The
+          # embed-onnx opt-in path is still proven on ubuntu + macos above.
+          - os: windows-latest
+            features: embed-onnx
         include:
           - features: default
             flags: ""
@@ -38,8 +45,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          # Key the cache per OS+feature set so the two builds don't thrash.
-          key: ${{ matrix.features }}
+          # Key the cache per OS+feature set so the builds don't thrash.
+          key: ${{ matrix.os }}-${{ matrix.features }}
 
       - name: Build
         run: cargo build --locked ${{ matrix.flags }}

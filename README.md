@@ -5,14 +5,28 @@
 [![CI](https://github.com/david-burley/umb/actions/workflows/ci.yml/badge.svg)](https://github.com/david-burley/umb/actions/workflows/ci.yml)
 [![License: PolyForm NC 1.0.0](https://img.shields.io/badge/license-PolyForm%20NC%201.0.0-blue.svg)](./LICENSE)
 
-Universal MCP Bridge consolidates many Model Context Protocol (MCP) servers
-behind a single unified MCP server. Instead of configuring dozens of MCP
-servers directly in your AI coding agent, you configure them once in UMB, and
-UMB presents a compact 3-tool API (plus built-in file/shell tools) to the
-agent. This keeps the agent's tool list small and fast while still giving it
-access to every backing server.
+Universal MCP Bridge is a source-available **MCP gateway** that consolidates
+many **Model Context Protocol (MCP)** servers behind a single unified MCP
+server. Instead of configuring dozens of MCP servers directly in your AI coding
+agent (Claude Code, Cursor, Cline, and any MCP-compatible client), you configure
+them once in UMB, and UMB presents a compact 3-tool API (plus built-in
+file/shell tools) to the agent. This keeps the agent's tool list small and its
+**context window** free — in a neutral benchmark a 138,417-token static tool
+baseline collapses to ~1,200 tokens, a **~99.1% reduction** — while still giving
+the agent access to every backing server.
 
 UMB is a single native Rust binary (`umb`) with no runtime dependencies.
+
+## Why
+
+The MCP gateway space is crowded, and most projects lead on auth, governance, or
+consolidation. UMB leads on **context efficiency**. Every MCP server you wire
+directly into an agent loads its full tool schemas into the model's context
+before any work begins; in a neutral benchmark, 756 tools wired directly cost
+138,417 tokens of static context. UMB hides that surface behind three meta-tools
+and serves full definitions only on demand, cutting static tool context ~99.1%
+(and 55–75% of working context in real sessions). It's a single source-available
+Rust binary with no feature gates — every capability ships in every copy.
 
 ## Features
 
@@ -218,6 +232,34 @@ cargo build --release --target x86_64-unknown-linux-gnu
 rustup target add x86_64-pc-windows-msvc
 cargo build --release --target x86_64-pc-windows-msvc
 ```
+
+## FAQ
+
+**What is Universal MCP Bridge?**
+UMB is a source-available MCP gateway that sits in front of all your MCP servers.
+Instead of loading every server's tools into your agent's context, UMB exposes
+just three meta-tools — `list_tools`, `list_mcps`, and `route_mcp_call` — and
+reduces static tool context by about 99.1%.
+
+**How much context does UMB save?**
+UMB collapses a measured 138,417-token tool baseline into a compact 3-tool
+surface, a roughly 99.1% reduction in static tool context. In real agent
+sessions this translates to a 55%–75% reduction in working context.
+
+**Is Universal MCP Bridge free?**
+Yes — UMB is free for noncommercial use under the PolyForm Noncommercial 1.0.0
+license, with full source on GitHub. Commercial use requires a Team or Enterprise
+license; contact the maintainer.
+
+**Does UMB work with Claude Code?**
+Yes. UMB is a standard MCP server (JSON-RPC 2.0 over stdio), so it works with
+Claude Code and any MCP-compatible client. You register UMB once and it fronts
+every other MCP server.
+
+**How is UMB different from other MCP gateways?**
+Most MCP gateways focus on auth, governance, or consolidation. UMB leads on
+context efficiency: a single Rust binary with no feature gates that cuts static
+tool context ~99.1%, plus optional semantic tool search.
 
 ## License
 

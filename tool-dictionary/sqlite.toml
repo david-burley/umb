@@ -1,0 +1,30 @@
+# SQLite MCP Server — @modelcontextprotocol/server-sqlite
+[metadata]
+server_name = "sqlite"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/sqlite"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "read_query"
+short_description = "Run a read-only SELECT query"
+
+[[tools]]
+name = "write_query"
+short_description = "Run an INSERT/UPDATE/DELETE query"
+
+[[tools]]
+name = "create_table"
+short_description = "Run a CREATE TABLE statement"
+
+[[tools]]
+name = "list_tables"
+short_description = "List all tables in the database"
+
+[[tools]]
+name = "describe_table"
+short_description = "Describe a table's schema"
+
+[[tools]]
+name = "append_insight"
+short_description = "Append an insight to the memo resource"

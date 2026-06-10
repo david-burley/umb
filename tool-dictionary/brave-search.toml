@@ -1,0 +1,14 @@
+# Brave Search MCP Server — @modelcontextprotocol/server-brave-search
+[metadata]
+server_name = "brave-search"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "brave_web_search"
+short_description = "Web search via Brave Search"
+
+[[tools]]
+name = "brave_local_search"
+short_description = "Local business / place search via Brave"

@@ -1,0 +1,29 @@
+# umb-validator — tool-dictionary validation harness daemon.
+# Validation Harness SPEC v2 §7. Install on your validator host:
+#   sudo cp validator/systemd/umb-validator.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now umb-validator
+#
+# RuntimeMaxSec=12h: local-fleet runs are free + naturally run overnight.
+# SIGTERM at the cap triggers a clean checkpoint; the daemon resumes with no
+# double-work because every pipeline step stamps a state_event before
+# inference dispatch.
+[Unit]
+Description=UMB tool-dictionary validation harness
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=umbvalidator
+ExecStart=/usr/local/bin/umb-validator daemon
+Restart=on-failure
+RestartSec=30
+RuntimeMaxSec=43200
+TimeoutStopSec=90
+KillSignal=SIGTERM
+EnvironmentFile=/etc/umb-validator/env
+WorkingDirectory=/home/umbvalidator
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+/target
+**/__pycache__/
+*.log
+.DS_Store
+
+# Internal tooling / agent workflow artifacts (not part of the open release)
+/.ace/
+/.claude/
+.ruff_cache/
+.umb-test/
+
+# Private keys / certificates — NEVER commit secret material.
+# Defensive: this project's proprietary history had a committed .pem incident.
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks

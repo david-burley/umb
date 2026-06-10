@@ -1,0 +1,14 @@
+# Google Drive MCP Server — @modelcontextprotocol/server-gdrive
+[metadata]
+server_name = "gdrive"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/gdrive"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "search"
+short_description = "Search Google Drive files"
+
+[[tools]]
+name = "gdrive_read_file"
+short_description = "Read a Google Drive file's contents"

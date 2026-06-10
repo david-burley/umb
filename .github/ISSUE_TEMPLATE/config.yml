@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Commercial licensing
+    url: https://universalmcpbridge.app
+    about: >
+      UMB is free for noncommercial use under PolyForm NC 1.0.0. For
+      commercial licensing (Team / Enterprise), use the contact on the site —
+      please don't open a GitHub issue for licensing questions.
+  - name: Security vulnerability
+    url: https://github.com/david-burley/umb/security/policy
+    about: Report security issues privately — see SECURITY.md, not a public issue.

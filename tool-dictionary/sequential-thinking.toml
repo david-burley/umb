@@ -1,0 +1,18 @@
+# Sequential Thinking MCP Server — @modelcontextprotocol/server-sequential-thinking
+# Canonical source: https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking
+#
+# Curator notes:
+#   Single-tool server; the upstream description is a ~400-word usage
+#   manual (when to use, thoughts/totalThoughts semantics, branching,
+#   revision protocol, examples). The short form below captures the
+#   action; agents reach for it correctly from the name + this terse line.
+
+[metadata]
+server_name = "sequential-thinking"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "sequentialthinking"
+short_description = "Step-by-step reasoning with revision and branching"

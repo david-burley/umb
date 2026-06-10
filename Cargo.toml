@@ -1,0 +1,112 @@
+[package]
+name = "umb"
+version = "0.1.0"
+edition = "2021"
+description = "Universal MCP Bridge (UMB)"
+license-file = "LICENSE"
+build = "build.rs"
+authors = ["Feature Collective Investments, LLC"]
+repository = "https://universalmcpbridge.app"
+homepage = "https://universalmcpbridge.app"
+readme = "README.md"
+keywords = ["mcp", "model-context-protocol", "ai", "tools", "bridge"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "umb"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["full", "sync"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls", "blocking"], default-features = false }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dirs = "5"
+sysinfo = "0.30"
+thiserror = "1"
+anyhow = "1"
+once_cell = "1.19"
+indexmap = { version = "2", features = ["serde"] }
+
+# HTTP clients
+ureq = { version = "2.10", features = ["json"] }
+
+
+# Hot-swap dependencies
+notify = { version = "6", features = ["macos_fsevent"] }
+parking_lot = "0.12"
+
+# Graceful shutdown (Spec 001 - Zombie Process Fix)
+tokio-util = { version = "0.7", features = ["rt"] }
+
+# Configuration
+toml = "0.8"
+
+# Local tools (built-in file operations)
+glob = "0.3"
+
+# EmbeddingGemma with ONNX Runtime (GPU-accelerated) — OPT-IN ONLY.
+# These crates are gated behind the `embed-onnx` feature (default = []).
+# A default `cargo build` is keyword-only and does NOT pull `ort`'s
+# `download-binaries` (the ~88MB libonnxruntime). The transitive
+# `download-binaries` feature only activates when `ort` is selected via
+# `--features embed-onnx` (or the GPU features, which imply it).
+ort = { version = "=2.0.0-rc.9", features = ["download-binaries"], optional = true }
+tokenizers = { version = "0.21", default-features = false, features = ["onig"], optional = true }
+ndarray = { version = "0.16", optional = true }
+hf-hub = { version = "0.4", optional = true }
+# sha2: used by (a) the tool-dictionary per-entry hash-guard (unconditional,
+# tiny ~50KB crate, used in src/server/tool_dictionary.rs) and (b) the
+# embed-onnx-only ONNX model-file integrity hash (src/features/semantic_search.rs).
+# Made unconditional so the dict module compiles in default keyword-only builds;
+# the embed-onnx feature still requires it (transitively, via being in the
+# default dep set). (Note: the separate [build-dependencies] sha2 is unrelated and stays.)
+sha2 = "0.10"
+
+[dev-dependencies]
+# Dependencies for examples
+mac_address = "1"
+hostname = "0.4"
+# Dependencies for tests
+tempfile = "3"
+
+[build-dependencies]
+# reqwest is referenced by build.rs's `download_embeddinggemma_model`
+# (its call site at build.rs:~53 is commented out, but the fn BODY is not —
+# it is `#[allow(dead_code)]` and still compiles + type-checks, so removing
+# reqwest here would break `cargo build`). Kept. The other former
+# build-deps (sha2, hex, flate2, tar) are referenced by NOTHING in build.rs
+# (not even the dead fn) — removed as provably-unused.
+reqwest = { version = "0.11", features = ["blocking", "rustls-tls"], default-features = false }
+
+[features]
+# Default open release: keyword search only — zero-dependency, fully offline,
+# no model download, no ONNX runtime. (Blueprint §7.1)
+default = []
+# Opt-in ONNX/EmbeddingGemma semantic-search stack. Enabling this pulls the
+# heavy embedding crates (and `ort`'s ~88MB libonnxruntime download).
+embed-onnx = ["dep:ort", "dep:tokenizers", "dep:ndarray", "dep:hf-hub"]
+# Enable CUDA GPU support (Linux/Windows) — implies embed-onnx (§7.1: GPU
+# features reference ort/* which only exist when embed-onnx is selected).
+cuda = ["embed-onnx", "ort/cuda"]
+# Enable TensorRT optimization (Linux/Windows) — implies embed-onnx.
+tensorrt = ["embed-onnx", "ort/tensorrt"]
+# Enable CoreML/Metal GPU support (macOS) — implies embed-onnx.
+coreml = ["embed-onnx", "ort/coreml"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "symbols"  # Strip all symbols including debug info
+debug = false      # No debug info in release builds
+debug-assertions = false
+
+[profile.release.build-override]
+opt-level = 3

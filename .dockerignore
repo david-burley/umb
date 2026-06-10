@@ -1,0 +1,25 @@
+# Ignore build artifacts
+target/
+dist/
+
+# Ignore git
+.git/
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignore local config
+.env
+.env.*
+*.local
+
+# Ignore test artifacts
+*.log
+coverage/
+
+# Ignore Docker build artifacts
+*.tar
+*.tar.gz

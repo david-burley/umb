@@ -1,0 +1,38 @@
+# Slack MCP Server — @modelcontextprotocol/server-slack
+[metadata]
+server_name = "slack"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/slack"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "slack_list_channels"
+short_description = "List public Slack channels"
+
+[[tools]]
+name = "slack_post_message"
+short_description = "Post a message to a channel"
+
+[[tools]]
+name = "slack_reply_to_thread"
+short_description = "Reply to a thread"
+
+[[tools]]
+name = "slack_add_reaction"
+short_description = "Add an emoji reaction to a message"
+
+[[tools]]
+name = "slack_get_channel_history"
+short_description = "Get a channel's recent messages"
+
+[[tools]]
+name = "slack_get_thread_replies"
+short_description = "Get replies in a thread"
+
+[[tools]]
+name = "slack_get_users"
+short_description = "List workspace users"
+
+[[tools]]
+name = "slack_get_user_profile"
+short_description = "Get one user's profile"

@@ -1,0 +1,50 @@
+# GitLab MCP Server — @modelcontextprotocol/server-gitlab
+[metadata]
+server_name = "gitlab"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/gitlab"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "create_or_update_file"
+short_description = "Create or update a file in a project"
+
+[[tools]]
+name = "search_repositories"
+short_description = "Search GitLab projects"
+
+[[tools]]
+name = "create_repository"
+short_description = "Create a new GitLab project"
+
+[[tools]]
+name = "get_file_contents"
+short_description = "Read a file from a project"
+
+[[tools]]
+name = "push_files"
+short_description = "Push multiple files in one commit"
+
+[[tools]]
+name = "create_issue"
+short_description = "Open a new issue"
+
+[[tools]]
+name = "create_merge_request"
+short_description = "Open a new merge request"
+
+[[tools]]
+name = "fork_repository"
+short_description = "Fork a project"
+
+[[tools]]
+name = "create_branch"
+short_description = "Create a new branch"
+
+[[tools]]
+name = "list_issues"
+short_description = "List issues in a project"
+
+[[tools]]
+name = "list_merge_requests"
+short_description = "List merge requests in a project"

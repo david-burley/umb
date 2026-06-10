@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a defect in UMB itself (not in a backend MCP server)
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thanks for the report. UMB is a transport bridge — if the misbehaving
+        tool comes from a backend MCP server you configured, that's usually a
+        bug in that server, not in UMB. See KNOWN_ISSUES.md for the scope of
+        what UMB owns.
+  - type: input
+    id: version
+    attributes:
+      label: UMB version
+      description: Output of `umb --version`.
+      placeholder: "umb 0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 / Ubuntu 24.04 / Windows 11"
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      description: The agent/app driving UMB over stdio.
+      placeholder: "Claude Desktop / Claude Code / custom"
+    validations:
+      required: true
+  - type: textarea
+    id: servers
+    attributes:
+      label: servers.json shape
+      description: >
+        The relevant part of your `servers.json` (REDACT tokens, paths, and
+        any secrets — server names and command shape are what matter).
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: What you did, what you expected, what happened instead.
+      placeholder: |
+        1. Configure UMB with ...
+        2. Call ...
+        3. Observed ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: Relevant stderr output, ideally from `RUST_LOG=debug`.
+      render: shell
+    validations:
+      required: false

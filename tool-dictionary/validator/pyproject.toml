@@ -1,0 +1,44 @@
+# umb-validator — tool-dictionary validation harness
+# Validation Harness SPEC v2 (test-campaign/19-validation-harness/SPEC.md).
+# Additive tooling: lives alongside the tool-dictionary it reads + writes.
+# It NEVER modifies the Rust loader or any umb/ core source.
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "umb-validator"
+version = "0.1.0"
+description = "UMB tool-dictionary auto-research validation harness"
+requires-python = ">=3.12"
+dependencies = [
+  "anthropic>=0.39",       # cloud path only (--with-cloud)
+  "openai>=1.50",          # OpenAI-compatible AI Gateway AND cloud OpenAI
+  "httpx>=0.27",           # /v1/models discovery, WebFetch
+  "tomlkit>=0.13",         # comment-preserving TOML round-trip
+  "pydantic>=2.8",
+  "tiktoken>=0.7",
+  "typer>=0.12",           # CLI
+  "rich>=13",              # CLI tables / progress
+  "structlog>=24",         # JSON logging
+  "beautifulsoup4>=4.12",  # research-phase doc/README parsing
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "mypy>=1.10"]
+
+[project.scripts]
+umb-validator = "umb_validator.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["umb_validator*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+files = ["umb_validator"]

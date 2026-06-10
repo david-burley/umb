@@ -1,0 +1,11 @@
+# Fetch MCP Server — @modelcontextprotocol/server-fetch
+# Canonical source: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+[metadata]
+server_name = "fetch"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "fetch"
+short_description = "Fetch a URL and return its content"

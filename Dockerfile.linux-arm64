@@ -1,0 +1,31 @@
+# Dockerfile for building Linux ARM64 binary with ONNX Runtime support
+# Uses Ubuntu 24.04 for glibc 2.39 compatibility with ONNX Runtime pre-built binaries
+# Build with: docker buildx build --platform linux/arm64 -f Dockerfile.linux-arm64 -t umb-linux-arm64 .
+
+FROM --platform=linux/arm64 ubuntu:24.04
+
+# Install Rust toolchain and build dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    gcc \
+    g++ \
+    pkg-config \
+    libssl-dev \
+    build-essential \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Set working directory
+WORKDIR /build
+
+# Copy source code
+COPY . .
+
+# Build release binary (native target is aarch64-unknown-linux-gnu on ARM64)
+RUN cargo build --release
+
+# The binary will be in /build/target/release/umb

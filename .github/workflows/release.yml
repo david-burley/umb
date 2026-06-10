@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  # Release artifacts are default-features builds (keyword-only). No
+  # embed-onnx: it would balloon the binary and pull the ~88MB ONNX runtime.
+  # Users who want semantic search build from source with --features embed-onnx.
+  build:
+    name: build / ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - name: macos-x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+          - name: macos-aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Stage binary
+        run: |
+          mkdir -p staged
+          cp "target/${{ matrix.target }}/release/umb" "staged/umb-${{ matrix.name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: umb-${{ matrix.name }}
+          path: staged/umb-${{ matrix.name }}
+          if-no-files-found: error
+
+  release:
+    name: assemble release
+    needs: build
+    runs-on: macos-latest # macOS runner provides `lipo` for the universal binary
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Assemble release assets
+        run: |
+          mkdir -p dist
+          # Linux x86_64: pass through as-is.
+          cp "artifacts/umb-linux-x86_64/umb-linux-x86_64" "dist/umb-linux-x86_64"
+          # macOS universal: lipo the two arch slices together.
+          lipo -create \
+            "artifacts/umb-macos-x86_64/umb-macos-x86_64" \
+            "artifacts/umb-macos-aarch64/umb-macos-aarch64" \
+            -output "dist/umb-macos-universal"
+          chmod +x dist/umb-*
+
+      - name: Generate SHA256SUMS
+        working-directory: dist
+        run: shasum -a 256 umb-* > SHA256SUMS
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/umb-linux-x86_64
+            dist/umb-macos-universal
+            dist/SHA256SUMS
+          generate_release_notes: true

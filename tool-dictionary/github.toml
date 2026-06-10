@@ -1,0 +1,120 @@
+# GitHub MCP Server — official @modelcontextprotocol/server-github
+# Canonical source: https://github.com/modelcontextprotocol/servers/tree/main/src/github
+#
+# Curator notes:
+#   The largest single-server tool surface in the ecosystem (~26 tools).
+#   Descriptions mirror the REST API verbatim with extensive parameter
+#   prose. The hand-curated short forms below cover the highest-impact
+#   tools; less-used tools (gist mgmt, codespaces, etc.) inherit from
+#   server live def until further curation. No hash-guard — we want these
+#   to keep applying across GitHub server version bumps.
+
+[metadata]
+server_name = "github"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/github"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "create_or_update_file"
+short_description = "Create or update a file in a repo"
+
+[[tools]]
+name = "search_repositories"
+short_description = "Search GitHub repositories"
+
+[[tools]]
+name = "create_repository"
+short_description = "Create a new GitHub repository"
+
+[[tools]]
+name = "get_file_contents"
+short_description = "Read a file or directory from a repo"
+
+[[tools]]
+name = "push_files"
+short_description = "Push multiple files in one commit"
+
+[[tools]]
+name = "create_issue"
+short_description = "Open a new issue"
+
+[[tools]]
+name = "create_pull_request"
+short_description = "Open a new pull request"
+
+[[tools]]
+name = "fork_repository"
+short_description = "Fork a repository to your account"
+
+[[tools]]
+name = "create_branch"
+short_description = "Create a new branch"
+
+[[tools]]
+name = "list_commits"
+short_description = "List commits on a branch"
+
+[[tools]]
+name = "list_issues"
+short_description = "List issues in a repository"
+
+[[tools]]
+name = "update_issue"
+short_description = "Edit an existing issue"
+
+[[tools]]
+name = "add_issue_comment"
+short_description = "Add a comment to an issue"
+
+[[tools]]
+name = "search_code"
+short_description = "Search code across GitHub"
+
+[[tools]]
+name = "search_issues"
+short_description = "Search issues and pull requests"
+
+[[tools]]
+name = "search_users"
+short_description = "Search GitHub user accounts"
+
+[[tools]]
+name = "get_issue"
+short_description = "Get one issue's details"
+
+[[tools]]
+name = "get_pull_request"
+short_description = "Get one pull request's details"
+
+[[tools]]
+name = "list_pull_requests"
+short_description = "List pull requests in a repository"
+
+[[tools]]
+name = "merge_pull_request"
+short_description = "Merge a pull request"
+
+[[tools]]
+name = "get_pull_request_files"
+short_description = "List files changed in a PR"
+
+[[tools]]
+name = "get_pull_request_status"
+short_description = "PR status checks (CI/CD)"
+
+[[tools]]
+name = "update_pull_request_branch"
+short_description = "Update PR branch with base"
+
+[[tools]]
+name = "get_pull_request_comments"
+short_description = "List review comments on a PR"
+
+[[tools]]
+name = "get_pull_request_reviews"
+short_description = "List reviews on a PR"
+
+[[tools]]
+name = "create_pull_request_review"
+short_description = "Submit a PR review (approve/comment/request changes)"

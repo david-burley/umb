@@ -1,0 +1,10 @@
+# Postgres MCP Server — @modelcontextprotocol/server-postgres
+[metadata]
+server_name = "postgres"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/postgres"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "query"
+short_description = "Run a read-only SQL query"

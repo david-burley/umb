@@ -1,0 +1,38 @@
+# GitHub Actions MCP Server (community)
+[metadata]
+server_name = "github-actions"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "list_workflows"
+short_description = "List workflows in a repository"
+
+[[tools]]
+name = "list_workflow_runs"
+short_description = "List workflow runs"
+
+[[tools]]
+name = "get_workflow_run"
+short_description = "Get one workflow run's details"
+
+[[tools]]
+name = "trigger_workflow"
+short_description = "Trigger a workflow_dispatch run"
+
+[[tools]]
+name = "cancel_workflow_run"
+short_description = "Cancel an in-progress workflow run"
+
+[[tools]]
+name = "rerun_workflow"
+short_description = "Re-run a completed workflow"
+
+[[tools]]
+name = "get_workflow_run_logs"
+short_description = "Fetch logs for a workflow run"
+
+[[tools]]
+name = "list_workflow_jobs"
+short_description = "List jobs in a workflow run"

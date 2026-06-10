@@ -1,0 +1,73 @@
+# Filesystem MCP Server — official @modelcontextprotocol/server-filesystem
+# Canonical source: https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem
+#
+# Curator notes:
+#   The upstream filesystem server's descriptions are unusually verbose
+#   ("Read the complete contents of a file from the file system. Handles
+#   various text encodings and provides detailed error messages if the file
+#   cannot be read. Use this tool when you need to examine the contents of
+#   a single file. Only works within allowed directories.") — biggest
+#   single-server token win in the dict. Hashes omitted: upstream wording
+#   changes occasionally and we WANT these to keep applying (no hash-guard).
+
+[metadata]
+server_name = "filesystem"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "read_file"
+short_description = "Read a file's contents"
+
+[[tools]]
+name = "read_text_file"
+short_description = "Read a text file's contents"
+
+[[tools]]
+name = "read_media_file"
+short_description = "Read an image or audio file (base64)"
+
+[[tools]]
+name = "read_multiple_files"
+short_description = "Read several files in one call"
+
+[[tools]]
+name = "write_file"
+short_description = "Write or overwrite a file"
+
+[[tools]]
+name = "edit_file"
+short_description = "Apply line-based edits to a text file"
+
+[[tools]]
+name = "create_directory"
+short_description = "Create a directory (recursive)"
+
+[[tools]]
+name = "list_directory"
+short_description = "List directory contents"
+
+[[tools]]
+name = "list_directory_with_sizes"
+short_description = "List directory contents with file sizes"
+
+[[tools]]
+name = "directory_tree"
+short_description = "Recursive directory tree as JSON"
+
+[[tools]]
+name = "move_file"
+short_description = "Move or rename a file or directory"
+
+[[tools]]
+name = "search_files"
+short_description = "Recursively search files by glob pattern"
+
+[[tools]]
+name = "get_file_info"
+short_description = "File metadata (size, timestamps, type)"
+
+[[tools]]
+name = "list_allowed_directories"
+short_description = "List server-permitted root directories"

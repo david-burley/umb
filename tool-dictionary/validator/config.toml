@@ -1,0 +1,82 @@
+# umb-validator config.toml — SPEC v2 §12.
+# Deploy to /etc/umb-validator/config.toml on your validator host.
+# Every value here is runtime-tunable; these are the SHIPPED defaults.
+# The four §13 owner decisions are baked in at their RECOMMENDED values:
+#   1. self-validation quorum  -> jury.quorum_q = 3 of jury.n = 4   (strict 3/4)
+#   2. jury composition        -> 2x Qwen-family + GLM; cloud Sonnet swaps in on --with-cloud
+#   3. local-gate K            -> gates.local_k_fraction = 0.75  (K = ceil(0.75*N))
+#   4. negative-prompt window  -> research.distractor_window = 8  (candidate + 7 distractors)
+
+[gateway]
+base_url = "http://localhost:8000/v1"    # your OpenAI-compatible gateway (e.g. vLLM, AI gateway)
+discover_models = true                   # query /v1/models at startup
+model_exclude = []                       # roster models to skip
+model_pin = []                           # if non-empty, use ONLY these (else all discovered)
+generator_model = "qwen3.5-35b-a3b"      # auto-research prompt generator (fuzzy-resolved)
+# Extra request-body params merged into every chat completion (via extra_body).
+# enable_thinking=false stops thinking-capable backends (e.g. a
+# qwen3.5-122b) reasoning past tool_choice="required" -> empty tool_calls.
+# Harmless on models whose chat template lacks the var. Set to {} to disable.
+chat_template_kwargs = { enable_thinking = false }
+
+[jury]                                   # §3.3 self-validation cross-model quorum
+n = 4
+quorum_q = 3                             # admit a prompt iff >= Q of N jurors agree (DECISION #1)
+models = ["qwen3.5-35b-a3b", "glm-4.7-flash", "qwen3.5-4b"]  # +cloud sonnet under --with-cloud
+
+[oracle]
+gen_positive = 45
+gen_negative = 30
+oracle_min_positive = 25
+oracle_min_negative = 15
+max_gen_rounds = 2
+low_conf_agreement = 0.85                # mean juror agreement below this -> low-confidence flag
+
+[gates]
+local_pp_tolerance = 3.0                 # per-model pp tolerance vs baseline
+local_k_fraction = 0.75                  # K = ceil(0.75*N) local models must pass (DECISION #3)
+cloud_rel_floor = 0.95                   # shortened >= 0.95 * baseline (cloud)
+token_reduction_min = 50.0
+positive_weight = 0.6                    # §4 accuracy weighting
+negative_weight = 0.4
+shortener_max_retries = 5
+cloud_shortener_max_retries = 3
+
+[session_pool]
+# Per-backend session caps. backend_a/b/c are opaque pool keys mapped to your
+# local inference hosts by the heuristics in integration/gateway.py; resize
+# the caps to match each host's concurrency ceiling.
+max_inflight_local = 24
+backend_a = 14
+backend_b = 18
+backend_c = 6
+max_concurrent_tools = 4
+max_concurrent_umb_dev = 2
+
+[budget]
+max_run_wall_seconds = 39600             # ~11h soft cap per run
+max_daily_cost_usd = 5.00                # CLOUD ONLY
+max_run_cost_usd = 2.00                  # CLOUD ONLY
+cloud_rps = 2
+
+[research]
+max_web_docs_per_tool = 3
+max_artifact_chars = 8000
+distractor_window = 8                    # candidate + 7 distractors (DECISION #4)
+github_api_base = "https://api.github.com"
+
+[cloud]                                  # only used when --with-cloud
+anthropic_base_url = "https://api.anthropic.com"
+anthropic_model = "claude-sonnet-4-6"
+openai_model = "gpt-4o-mini"             # resolved at runtime via models.list()
+
+[paths]
+state_dir = "~/.umb-validator"           # state.sqlite, runs/, umb-home/
+umb_dev_bin = "/usr/local/bin/umb-dev"
+pending_dir = ""                         # blank -> auto-resolve <repo>/tool-dictionary/_pending
+tool_dictionary_dir = ""                 # blank -> auto-resolve <repo>/tool-dictionary
+
+[ntfy]
+host = "https://ntfy.universalmcpbridge.app"
+log_topic = ""                           # filled by `umb-validator setup`
+alert_topic = ""                         # filled by `umb-validator setup`

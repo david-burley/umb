@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: rust / ${{ matrix.os }} / ${{ matrix.features }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        # Default = keyword-only, zero ONNX deps. embed-onnx pulls the heavy
+        # embedding stack (ort + ~88MB libonnxruntime download) to prove the
+        # opt-in path still builds and tests.
+        features: [default, embed-onnx]
+        include:
+          - features: default
+            flags: ""
+          - features: embed-onnx
+            flags: "--features embed-onnx"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          # Key the cache per OS+feature set so the two builds don't thrash.
+          key: ${{ matrix.features }}
+
+      - name: Build
+        run: cargo build --locked ${{ matrix.flags }}
+
+      - name: Test
+        run: cargo test --locked ${{ matrix.flags }}
+
+  # The Python tool-dictionary validator (tool-dictionary/validator).
+  # Its test suite is hermetic: every LLM/gateway/umb-dev interaction is
+  # mocked or driven from recorded fixtures (no network, no env vars, no
+  # live infra). So the full pytest run is safe in CI. mypy --strict is run
+  # against the umb_validator package per the package's own pyproject config.
+  validator:
+    name: tool-dictionary validator (python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tool-dictionary/validator
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install (with dev extras)
+        run: pip install -e ".[dev]"
+
+      - name: Type-check (mypy --strict)
+        run: mypy --strict umb_validator
+
+      - name: Test
+        run: pytest

@@ -1,0 +1,34 @@
+# Puppeteer MCP Server — @modelcontextprotocol/server-puppeteer
+[metadata]
+server_name = "puppeteer"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/puppeteer"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "puppeteer_navigate"
+short_description = "Navigate to a URL"
+
+[[tools]]
+name = "puppeteer_screenshot"
+short_description = "Capture a screenshot"
+
+[[tools]]
+name = "puppeteer_click"
+short_description = "Click a CSS selector"
+
+[[tools]]
+name = "puppeteer_fill"
+short_description = "Fill text into an input"
+
+[[tools]]
+name = "puppeteer_select"
+short_description = "Select a dropdown value"
+
+[[tools]]
+name = "puppeteer_hover"
+short_description = "Hover an element"
+
+[[tools]]
+name = "puppeteer_evaluate"
+short_description = "Evaluate JavaScript in the page"

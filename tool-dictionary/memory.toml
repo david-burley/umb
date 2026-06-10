@@ -1,0 +1,49 @@
+# Memory MCP Server — @modelcontextprotocol/server-memory
+# Canonical source: https://github.com/modelcontextprotocol/servers/tree/main/src/memory
+#
+# Curator notes:
+#   Knowledge-graph entity/relation tools; upstream descriptions inline
+#   JSON examples of entity shapes. Short forms below preserve the
+#   action verb + the object category so picker accuracy survives.
+
+[metadata]
+server_name = "memory"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/memory"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "create_entities"
+short_description = "Create entities in the knowledge graph"
+
+[[tools]]
+name = "create_relations"
+short_description = "Create relations between entities"
+
+[[tools]]
+name = "add_observations"
+short_description = "Add observations to existing entities"
+
+[[tools]]
+name = "delete_entities"
+short_description = "Delete entities and their relations"
+
+[[tools]]
+name = "delete_observations"
+short_description = "Delete specific observations from entities"
+
+[[tools]]
+name = "delete_relations"
+short_description = "Delete relations from the graph"
+
+[[tools]]
+name = "read_graph"
+short_description = "Read the entire knowledge graph"
+
+[[tools]]
+name = "search_nodes"
+short_description = "Search nodes by name, type, or content"
+
+[[tools]]
+name = "open_nodes"
+short_description = "Open one or more nodes by name"

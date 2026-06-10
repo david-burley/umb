@@ -1,0 +1,101 @@
+# Playwright MCP Server — Microsoft/playwright-mcp
+# Canonical source: https://github.com/microsoft/playwright-mcp
+#
+# Curator notes:
+#   Browser-automation surface is large (~20+ tools) and each description
+#   restates Playwright API contracts at length. Hand-curated top tools
+#   below; uncurated tools fall through to live def.
+
+[metadata]
+server_name = "playwright"
+upstream_canonical_source = "https://github.com/microsoft/playwright-mcp"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "browser_navigate"
+short_description = "Navigate browser to a URL"
+
+[[tools]]
+name = "browser_navigate_back"
+short_description = "Go back in browser history"
+
+[[tools]]
+name = "browser_click"
+short_description = "Click an element on the page"
+
+[[tools]]
+name = "browser_type"
+short_description = "Type text into an input"
+
+[[tools]]
+name = "browser_press_key"
+short_description = "Press a keyboard key"
+
+[[tools]]
+name = "browser_hover"
+short_description = "Hover over an element"
+
+[[tools]]
+name = "browser_drag"
+short_description = "Drag an element"
+
+[[tools]]
+name = "browser_drop"
+short_description = "Drop a dragged element"
+
+[[tools]]
+name = "browser_select_option"
+short_description = "Select an option from a dropdown"
+
+[[tools]]
+name = "browser_take_screenshot"
+short_description = "Capture a screenshot of the page"
+
+[[tools]]
+name = "browser_snapshot"
+short_description = "Get accessibility-tree snapshot"
+
+[[tools]]
+name = "browser_resize"
+short_description = "Resize the browser viewport"
+
+[[tools]]
+name = "browser_close"
+short_description = "Close the browser"
+
+[[tools]]
+name = "browser_wait_for"
+short_description = "Wait for a condition (selector/text/timeout)"
+
+[[tools]]
+name = "browser_evaluate"
+short_description = "Evaluate JavaScript in the page"
+
+[[tools]]
+name = "browser_console_messages"
+short_description = "Get browser console messages"
+
+[[tools]]
+name = "browser_network_requests"
+short_description = "List network requests since load"
+
+[[tools]]
+name = "browser_network_request"
+short_description = "Get details for one network request"
+
+[[tools]]
+name = "browser_file_upload"
+short_description = "Upload file(s) to a file input"
+
+[[tools]]
+name = "browser_fill_form"
+short_description = "Fill multiple form fields at once"
+
+[[tools]]
+name = "browser_handle_dialog"
+short_description = "Accept or dismiss a JS dialog"
+
+[[tools]]
+name = "browser_tabs"
+short_description = "List, switch, or close browser tabs"

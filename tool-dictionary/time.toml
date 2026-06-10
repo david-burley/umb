@@ -1,0 +1,15 @@
+# Time MCP Server — @modelcontextprotocol/server-time
+# Canonical source: https://github.com/modelcontextprotocol/servers/tree/main/src/time
+[metadata]
+server_name = "time"
+upstream_canonical_source = "https://github.com/modelcontextprotocol/servers/tree/main/src/time"
+curator = "umb-core"
+reviewed_at = "2026-05-20"
+
+[[tools]]
+name = "get_current_time"
+short_description = "Get the current time in a timezone"
+
+[[tools]]
+name = "convert_time"
+short_description = "Convert a time between timezones"

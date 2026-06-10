@@ -1,0 +1,16 @@
+# NOTE: For Linux x64 builds, use build-linux-docker.sh instead of cross
+# The cross tool doesn't support Ubuntu 24.04 images which are required
+# for glibc 2.39+ compatibility with ONNX Runtime pre-built binaries.
+# See LINUX_BUILD.md for details.
+
+[target.x86_64-unknown-linux-gnu]
+# NOT USED - see build-linux-docker.sh instead
+image = "ubuntu:24.04"
+pre-build = [
+    "apt-get update && apt-get install -y curl gcc g++ pkg-config libssl-dev build-essential"
+]
+
+[target.x86_64-pc-windows-gnu]
+pre-build = [
+    "apt-get update && apt-get install -y mingw-w64"
+]

@@ -1,0 +1,12 @@
+# umb-validator — local-only artifacts, never committed.
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+# harness runtime state (lives in ~/.umb-validator on the host).
+runs/

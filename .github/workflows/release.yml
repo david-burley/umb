@@ -28,6 +28,11 @@ jobs:
           - name: macos-aarch64
             os: macos-latest
             target: aarch64-apple-darwin
+          - name: windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            # Cargo emits `umb.exe` on Windows; the staged asset keeps `.exe`.
+            ext: ".exe"
     steps:
       - uses: actions/checkout@v4
 
@@ -42,15 +47,18 @@ jobs:
       - name: Build
         run: cargo build --release --locked --target ${{ matrix.target }}
 
+      # `shell: bash` so this single `cp`/`mkdir -p` script works identically on
+      # the windows runner (bash is preinstalled on GitHub windows images).
       - name: Stage binary
+        shell: bash
         run: |
           mkdir -p staged
-          cp "target/${{ matrix.target }}/release/umb" "staged/umb-${{ matrix.name }}"
+          cp "target/${{ matrix.target }}/release/umb${{ matrix.ext }}" "staged/umb-${{ matrix.name }}${{ matrix.ext }}"
 
       - uses: actions/upload-artifact@v4
         with:
           name: umb-${{ matrix.name }}
-          path: staged/umb-${{ matrix.name }}
+          path: staged/umb-${{ matrix.name }}${{ matrix.ext }}
           if-no-files-found: error
 
   release:
@@ -67,6 +75,8 @@ jobs:
           mkdir -p dist
           # Linux x86_64: pass through as-is.
           cp "artifacts/umb-linux-x86_64/umb-linux-x86_64" "dist/umb-linux-x86_64"
+          # Windows x86_64: pass through as-is (keep the .exe suffix).
+          cp "artifacts/umb-windows-x86_64/umb-windows-x86_64.exe" "dist/umb-windows-x86_64.exe"
           # macOS universal: lipo the two arch slices together.
           lipo -create \
             "artifacts/umb-macos-x86_64/umb-macos-x86_64" \
@@ -83,5 +93,6 @@ jobs:
           files: |
             dist/umb-linux-x86_64
             dist/umb-macos-universal
+            dist/umb-windows-x86_64.exe
             dist/SHA256SUMS
           generate_release_notes: true

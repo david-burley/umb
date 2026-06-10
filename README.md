@@ -102,6 +102,10 @@ Add UMB to your agent's MCP configuration the same way you would any stdio MCP
 server (e.g. an entry in `.mcp.json` or `claude_desktop_config.json` pointing
 at the `umb` binary).
 
+For per-harness setup — Claude Code, opencode, Cursor/Windsurf, Hermes Agent,
+OpenClaw, and generic MCP clients — see
+[**docs/INTEGRATIONS.md**](./docs/INTEGRATIONS.md).
+
 ### List configured servers
 
 ```bash

@@ -155,6 +155,7 @@ UMB reads configuration from `~/.umb/`:
 | `~/.umb/config.toml`   | General + semantic-search settings (optional) |
 | `~/.umb/servers.json`  | The MCP servers UMB connects to |
 | `~/.umb/cache/`        | Model/cache directory (semantic search) |
+| `~/.umb/skills/`       | Agent skills served via `skills_list` / `skills_read` |
 
 `servers.json` uses the standard MCP server format (the same shape as
 `.mcp.json` / `claude_desktop_config.json`):
@@ -196,6 +197,40 @@ The server implements JSON-RPC 2.0 over stdio.
 { "jsonrpc": "2.0", "id": 1, "method": "tools/call",
   "params": { "tool": "tool_name", "args": { "param1": "value1" } } }
 ```
+
+### `skills_list` / `skills_read` (agent skills)
+
+UMB can also serve agent skills (progressive disclosure) next to MCP tools.
+A skill is a subdirectory of the skills directory containing a `SKILL.md`
+with YAML-ish frontmatter (`name`, `description`; extra keys are tolerated).
+Configure it in `~/.umb/config.toml`:
+
+```toml
+[skills]
+dir = "~/.umb/skills"      # one subdirectory per skill, each with SKILL.md
+pinned = ["my-skill"]      # these get pinned = true in the index
+```
+
+`skills_list` returns the compact index (name + short description + pinned
+flag only), `skills_read` returns one full body (frontmatter stripped):
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "method": "skills_list" }
+{ "jsonrpc": "2.0", "id": 2, "method": "skills_read",
+  "params": { "name": "my-skill" } }
+```
+
+Both are also registered as regular tools, so MCP clients see them in
+`tools/list` and can invoke them through `tools/call`:
+
+```json
+{ "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+  "params": { "tool": "skills_read", "args": { "name": "my-skill" } } }
+```
+
+Malformed skills are skipped with a log warning (never fatal), and edits to
+`SKILL.md` files are picked up automatically via mtime-based cache
+invalidation, no restart required.
 
 ## Development
 

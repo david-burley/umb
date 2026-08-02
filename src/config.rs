@@ -19,6 +19,9 @@ pub struct UmbConfig {
 
     /// General settings
     pub general: GeneralConfig,
+
+    /// Agent-skills registry configuration
+    pub skills: SkillsConfig,
 }
 
 /// Semantic search configuration
@@ -91,6 +94,35 @@ pub struct SemanticSearchConfig {
     /// Default: 10
     #[serde(default = "default_max_results")]
     pub max_results: usize,
+}
+
+/// Agent-skills registry configuration.
+///
+/// UMB can serve agent skills (SKILL.md files with YAML-ish frontmatter,
+/// one subdirectory per skill) alongside MCP tools through the same stdio
+/// interface, using progressive disclosure: `skills_list` returns a compact
+/// index (name + short description + pinned flag) and `skills_read` fetches
+/// one full body on demand.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SkillsConfig {
+    /// Directory containing the skill subdirectories.
+    ///
+    /// Each immediate subdirectory holding a `SKILL.md` is one skill.
+    /// Tilde `~` is expanded at load time. A missing directory is not an
+    /// error: the index is simply empty.
+    ///
+    /// Default: `~/.umb/skills`
+    #[serde(default = "default_skills_dir")]
+    pub dir: String,
+
+    /// Skill names that clients should always display in full.
+    ///
+    /// Matching entries carry `"pinned": true` in the `skills_list` index.
+    ///
+    /// Default: empty.
+    #[serde(default)]
+    pub pinned: Vec<String>,
 }
 
 /// General configuration
@@ -209,11 +241,26 @@ fn default_tool_dictionary_user_dir() -> String {
     "~/.umb/tool-dictionary".to_string()
 }
 
+/// Default skills directory. Tilde `~` is expanded by the loader.
+fn default_skills_dir() -> String {
+    "~/.umb/skills".to_string()
+}
+
 impl Default for UmbConfig {
     fn default() -> Self {
         Self {
             semantic_search: SemanticSearchConfig::default(),
             general: GeneralConfig::default(),
+            skills: SkillsConfig::default(),
+        }
+    }
+}
+
+impl Default for SkillsConfig {
+    fn default() -> Self {
+        Self {
+            dir: default_skills_dir(),
+            pinned: Vec::new(),
         }
     }
 }
@@ -359,12 +406,24 @@ impl UmbConfig {
 #
 "#;
 
+        let skills_comment = r#"
+# Agent Skills Configuration
+# --------------------------
+# UMB can serve agent skills (SKILL.md files, one subdirectory per skill)
+# alongside MCP tools. Clients fetch a compact index with skills_list and
+# full skill bodies on demand with skills_read.
+#
+# dir:    Directory containing the skill subdirectories.
+#         Default: ~/.umb/skills
+# pinned: Skill names clients should always display in full; these entries
+#         carry pinned = true in the skills_list index.
+#         Default: []
+#
+"#;
+
         format!(
-            "{}{}{}{}",
-            header,
-            semantic_comment,
-            general_comment,
-            content
+            "{}{}{}{}{}",
+            header, semantic_comment, general_comment, skills_comment, content
         )
     }
 
@@ -404,6 +463,11 @@ impl UmbConfig {
                     .join("servers.json")
             })
     }
+
+    /// Get the skills directory (tilde-expanded)
+    pub fn get_skills_dir(&self) -> PathBuf {
+        crate::server::skills::expand_tilde(&self.skills.dir)
+    }
 }
 
 #[cfg(test)]
@@ -423,6 +487,24 @@ mod tests {
         let config = UmbConfig::default();
         let toml_str = toml::to_string_pretty(&config).unwrap();
         assert!(toml_str.contains("dimension = 768"));
+    }
+
+    #[test]
+    fn test_skills_config_defaults_and_backcompat() {
+        let config = UmbConfig::default();
+        assert_eq!(config.skills.dir, "~/.umb/skills");
+        assert!(config.skills.pinned.is_empty());
+
+        // Back-compat: a config.toml without a [skills] section still parses.
+        let parsed: UmbConfig = toml::from_str("[general]\ndebug = true\n").unwrap();
+        assert_eq!(parsed.skills.dir, "~/.umb/skills");
+        assert!(parsed.skills.pinned.is_empty());
+
+        // A populated [skills] section round-trips.
+        let parsed: UmbConfig =
+            toml::from_str("[skills]\ndir = \"/tmp/skills\"\npinned = [\"a\", \"b\"]\n").unwrap();
+        assert_eq!(parsed.skills.dir, "/tmp/skills");
+        assert_eq!(parsed.skills.pinned, vec!["a".to_string(), "b".to_string()]);
     }
 
     #[test]

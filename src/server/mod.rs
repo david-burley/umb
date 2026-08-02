@@ -1,6 +1,7 @@
 pub mod local_tools;
 pub mod mcp;
 pub mod router;
+pub mod skills;
 pub mod tool_dictionary;
 pub mod transport;
 

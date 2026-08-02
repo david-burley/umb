@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Agent-skills progressive disclosure: UMB now serves agent skills next to
+  MCP tools. A skill is a subdirectory of the configured skills directory
+  containing a `SKILL.md` with YAML-ish frontmatter (`name`, `description`;
+  extra keys, folded/literal block scalars, and flow lists are tolerated).
+  Two new builtin meta-tools: `skills_list` (compact index: name + short
+  description + pinned flag) and `skills_read` (full body on demand,
+  frontmatter stripped). Both are also reachable as direct JSON-RPC methods.
+  New `[skills]` section in `config.toml` (`dir`, default `~/.umb/skills`;
+  `pinned` list). Malformed skills are skipped with a warning, never fatal;
+  the registry cache invalidates per file on (mtime, length) changes.
+
 ## [0.1.0] - 2026-05-22
 
 Initial public release.
